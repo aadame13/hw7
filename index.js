@@ -2,10 +2,14 @@ var http = require("http");
 var fs = require("fs");
 var extract = require("./extract");
 var wss = require("./websockets-server");
+var mime = require("mime");
 
 var handleError = function(err, res) {
-  res.writeHead(404);
-  res.end();
+  fs.readFile("app/error.html", function(err, data) {
+    res.setHeader("Content-Type", mime.getType("html"));
+    res.writeHead(404);
+    res.end(data);
+  });
 };
 
 var server = http.createServer(function(req, res) {
@@ -13,6 +17,7 @@ var server = http.createServer(function(req, res) {
 
   var filePath = extract(req.url);
   fs.readFile(filePath, function(err, data) {
+    res.setHeader("Content-Type", mime.getType(filePath));
     if (err) {
       handleError(err, res);
       return;
